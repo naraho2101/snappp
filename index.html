@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Snappp prototype</title>
+  <link rel="stylesheet" href="tabler/tabler-icons.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="stage">
+    <div class="device">
+      <div class="device-screen" id="device">
+        <div class="island" aria-hidden="true"></div>
+        <div class="statusbar" aria-hidden="true">
+          <span id="clock">9:41</span>
+          <span class="status-icons"><i class="ti ti-antenna-bars-5"></i><i class="ti ti-wifi"></i><i class="ti ti-battery-3"></i></span>
+        </div>
+        <div id="app" class="app"></div>
+        <div id="overlay"></div>
+        <div id="banner" class="banner" hidden></div>
+        <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+      </div>
+    </div>
+    <aside class="demo" id="demo" aria-label="Demo controls"></aside>
+  </div>
+  <button class="demo-fab" id="demo-fab" aria-label="Open demo controls"><i class="ti ti-adjustments"></i></button>
+  <script src="app.js"></script>
+</body>
+</html>
