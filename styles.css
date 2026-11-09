@@ -374,11 +374,8 @@ button.chip { background: var(--bg); cursor: pointer; }
 .tile.planted .flower { animation: sprout 700ms var(--ease-standard); }
 @keyframes sprout { from { transform: scale(0.2) translateY(20%); opacity: 0; } to { transform: none; opacity: 1; } }
 
-/* Flower stages: Healthy (default), Wilting, Withered, and grey after a streak reset. */
+/* Flower stages are drawn in the SVG itself (see STAGE_LOOK in app.js). */
 .flower { transition: filter 600ms var(--ease-standard), transform 600ms var(--ease-standard); transform-origin: 50% 100%; }
-.st-wilting .flower { filter: saturate(0.5) sepia(0.35); transform: rotate(-8deg); }
-.st-withered .flower { filter: grayscale(0.6) sepia(0.6) brightness(0.85); transform: rotate(-16deg) translateY(5%); }
-.st-dried .flower { filter: grayscale(1) brightness(1.08); opacity: 0.55; transform: rotate(-16deg) translateY(5%); }
 .tile.rest { background: transparent; }
 .tile.missed { flex-direction: column; gap: 4px; }
 .tile.missed .soil { margin-top: 0; }

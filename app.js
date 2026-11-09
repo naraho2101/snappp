@@ -202,6 +202,8 @@
     if (st.resetAt && e.date < st.resetAt) return 'dried';
     return st.stage === 'wilting' || st.stage === 'withered' ? st.stage : 'healthy';
   }
+  // Draw an entry's flower in its stage; flowers from before a reset use the dead look.
+  const stagedFlower = (e, fs) => flowerSVG(e.flower, fs === 'dried' ? 'dead' : fs);
   const entriesOn = (d, hid) => S.entries.filter((e) => e.date === d && (!hid || e.habitId === hid)).sort((a, b) => a.ts - b.ts);
 
   // ─── Small UI helpers ───
@@ -306,12 +308,13 @@
       const fs = flowerStage(e, states[e.habitId]);
       const lift = Math.round(hash(e.id) * 10);
       return `<button class="bloom st-${fs}${UI.planted === e.id ? ' planted' : ''}" style="--lift:${lift}px" data-action="day" data-date="${e.date}" data-habit="${e.habitId}"
-        aria-label="${esc(`${h ? h.name : 'Habit'}, ${fmtDay(e.date, { month: 'short', day: 'numeric' })}, ${fs === 'dried' ? 'grey after a reset' : fs}`)}">${flowerSVG(e.flower)}</button>`;
+        aria-label="${esc(`${h ? h.name : 'Habit'}, ${fmtDay(e.date, { month: 'short', day: 'numeric' })}, ${fs === 'dried' ? 'grey after a reset' : fs}`)}">${stagedFlower(e, fs)}</button>`;
     }).join('');
     const legend = S.habits.filter((h) => S.entries.some((e) => e.habitId === h.id)).map((h) => {
       const st = states[h.id];
       const n = S.entries.filter((e) => e.habitId === h.id).length;
-      return `<div class="list-row">${habitIcon(h)}<div class="grow"><div class="h3">${esc(h.name)}</div><div class="xs muted">${n} flower${n === 1 ? '' : 's'}${h.deletedOn ? ' · Habit deleted' : ''}</div></div>${h.deletedOn ? '' : stageChip(st)}</div>`;
+      const look = { healthy: 'healthy', wilting: 'wilting', withered: 'withered', reset: 'dead' }[st.stage] || 'healthy';
+      return `<div class="list-row"><span class="habit-icon" aria-hidden="true">${flowerSVG(h.flower, look)}</span><div class="grow"><div class="h3">${esc(h.name)}</div><div class="xs muted">${n} flower${n === 1 ? '' : 's'}${h.deletedOn ? ' · Habit deleted' : ''}</div></div>${h.deletedOn ? '' : stageChip(st)}</div>`;
     }).join('');
     return `<section class="section">
         <div class="garden-bed meadow" aria-label="All flowers, oldest first">${blooms}</div>
@@ -339,8 +342,9 @@
       const sched = isScheduled(h, d);
       if (rec.has(d)) {
         const e = entriesOn(d, h.id)[0];
-        cls += ` st-${flowerStage(e, st)}`;
-        inner = flowerSVG(e.flower);
+        const fs = flowerStage(e, st);
+        cls += ` st-${fs}`;
+        inner = stagedFlower(e, fs);
         label += ', recorded';
       } else if (d === t) {
         label += sched ? ', due today' : ', not scheduled';
@@ -470,7 +474,7 @@
         const editing = sh.editing === e.id;
         const fs = flowerStage(e, habitState(eh));
         return `<div class="stack-3" style="margin-bottom:24px"><img class="photo" src="${photoSrc(e)}" alt="Your photo for ${esc(eh.name)}">
-          <div class="row-between"><div class="row" style="gap:8px"><span class="mini st-${fs}">${flowerSVG(e.flower)}</span><div class="h3">${esc(eh.name)}</div></div>${fs === 'dried' ? '<span class="badge-soft">Before reset</span>' : eh.deletedOn ? '<span class="badge-soft">Deleted habit</span>' : ''}</div>
+          <div class="row-between"><div class="row" style="gap:8px"><span class="mini st-${fs}">${stagedFlower(e, fs)}</span><div class="h3">${esc(eh.name)}</div></div>${fs === 'dried' ? '<span class="badge-soft">Before reset</span>' : eh.deletedOn ? '<span class="badge-soft">Deleted habit</span>' : ''}</div>
           ${editing
             ? `<label class="field"><textarea id="edit-ref" rows="3" maxlength="280" aria-label="Reflection">${esc(e.reflection)}</textarea></label><div class="row"><button class="btn btn-dark" data-action="save-ref" data-id="${e.id}">Save</button><button class="btn btn-ghost" data-action="cancel-ref">Cancel</button></div>`
             : `<p class="small ${e.reflection ? '' : 'muted'}">${e.reflection ? esc(e.reflection) : 'No reflection'}</p><button class="btn btn-secondary" data-action="edit-ref" data-id="${e.id}"><i class="ti ti-pencil"></i>${e.reflection ? 'Edit reflection' : 'Add reflection'}</button>`}
