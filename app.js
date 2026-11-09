@@ -83,7 +83,7 @@
   // How each habit stage draws a flower: head tilt (deg), stem bend and droop, and colour shift.
   const STAGE_LOOK = {
     healthy: { tilt: 0, bend: 0, drop: 0, toward: null, t: 0, stem: '#4f8a3a', leaf: '#5f9e45', fallen: 0 },
-    wilting: { tilt: 80, bend: 10, drop: 5, toward: '#7a4a2e', t: 0.68, stem: '#8a7742', leaf: '#a2884e', fallen: 2 },
+    wilting: { tilt: 80, bend: 10, drop: 5, toward: '#7a4a2e', t: 0.42, stem: '#8a7742', leaf: '#a2884e', fallen: 2 },
     withered: { tilt: 98, bend: 11, drop: 7, toward: '#3a2214', t: 0.86, stem: '#5c4628', leaf: '#6b5432', fallen: 4 },
     dead: { tilt: 125, bend: 11, drop: 8, toward: '#b4b4b4', t: 1, stem: '#a8a8a8', leaf: '#bdbdbd', fallen: 3 },
   };
@@ -258,7 +258,7 @@
       const st = habitState(h);
       const look = { new: 'new', healthy: 'healthy', wilting: 'wilting', withered: 'withered', reset: 'dead' }[st.stage];
       const badge = st.recordedToday ? '<span class="plot-badge done"><i class="ti ti-check"></i></span>'
-        : look === 'withered' ? '<svg class="plot-alert" viewBox="0 0 24 22" aria-hidden="true"><path d="M12 1.5 23 20.5H1Z" fill="var(--danger)" stroke="var(--danger)" stroke-width="2" stroke-linejoin="round"/><rect x="10.8" y="7.5" width="2.4" height="7" rx="1.2" fill="#fff"/><circle cx="12" cy="17.4" r="1.4" fill="#fff"/></svg>' : '';
+        : look === 'withered' ? '<svg class="plot-alert" viewBox="0 0 24 22" aria-hidden="true"><path d="M12 3.5 21 19H3Z" fill="var(--danger)" stroke="var(--danger)" stroke-width="5" stroke-linejoin="round"/><rect x="10.8" y="7.5" width="2.4" height="7" rx="1.2" fill="#fff"/><circle cx="12" cy="17.4" r="1.4" fill="#fff"/></svg>' : '';
       return `<div class="card habit-card is-${look}">
         <button class="habit-main tappable" data-action="edit-habit" data-id="${h.id}" aria-label="Edit ${esc(h.name)}, ${esc(STAGE_CHIP[st.stage])}">
           <span class="plot" aria-hidden="true">${look === 'new' ? sproutSVG() : flowerSVG(h.flower, look)}${badge}</span>
