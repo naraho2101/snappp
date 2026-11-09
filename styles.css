@@ -664,7 +664,7 @@ button.chip { background: var(--bg); cursor: pointer; }
 .is-dead .plot .flower { opacity: 0.85; }
 .plot-badge { position: absolute; z-index: 2; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--accent-on); }
 .plot-badge.done { background: var(--success); }
-.plot-alert { position: absolute; z-index: 2; top: 6px; right: 6px; width: 24px; height: 22px; }
+.plot-alert { position: absolute; z-index: 2; top: 7px; right: 7px; width: 18px; height: 17px; }
 .is-withered { border-color: var(--plot-withered-edge); }
 .plain-row { border: 0; background: none; padding-left: 0; padding-right: 0; }
 .list-row + .plain-row, .plain-row + .plain-row { border-top: 1px solid var(--border-soft); }
