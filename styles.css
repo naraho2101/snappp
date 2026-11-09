@@ -94,6 +94,13 @@
   --wall-1: #ffc9d6;
   --wall-2: #9fc1e8;
   --widget-bg: rgba(255, 255, 255, 0.92);
+  /* Habit plot grounds, one per stage. */
+  --plot-healthy: #edf6ea;
+  --plot-new: #f3f7ee;
+  --plot-wilting: #fbf1df;
+  --plot-withered: #fbe6df;
+  --plot-withered-edge: #e9b6a6;
+  --plot-dead: #efefef;
 }
 
 * { box-sizing: border-box; }
@@ -635,14 +642,28 @@ button.chip { background: var(--bg); cursor: pointer; }
 
 /* ─── Habits (PRD v3) ─── */
 .habit-icon .flower { width: 30px; height: 30px; }
-.habit-card { padding: var(--space-3) var(--space-4); }
-.habit-main { display: flex; align-items: center; gap: var(--space-3); border: 0; background: none; padding: 0; }
+.habit-card { padding: var(--space-3); }
+.habit-main { display: flex; align-items: center; gap: var(--space-4); border: 0; background: none; padding: 0; }
 .habit-main .grow { flex: 1; min-width: 0; }
-.habit-streak { text-align: right; }
-.habit-streak .n { font-size: var(--text-xl); font-weight: 700; line-height: 1; }
+.habit-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-top: 8px; }
+.streak-n { color: var(--fg); font-size: var(--text-sm); }
 .habit-foot { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border-soft); }
 .habit-foot .grow { flex: 1; min-width: 0; }
-.habit-foot .done-mark { font-size: 20px; }
+
+/* The plot: a large flower drawn in its habit's state, on a ground tinted by that state. */
+.plot { position: relative; flex: none; width: 88px; height: 88px; border-radius: var(--radius-md); background: var(--plot-healthy);
+  display: flex; align-items: flex-end; justify-content: center; padding: 6px 6px 2px; overflow: hidden; }
+.plot::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 6px; height: 5px; border-radius: 50%; background: var(--soil); }
+.plot .flower { position: relative; z-index: 1; width: 100%; height: 100%; }
+.is-new .plot { background: var(--plot-new); }
+.is-wilting .plot { background: var(--plot-wilting); }
+.is-withered .plot { background: var(--plot-withered); box-shadow: inset 0 0 0 2px var(--plot-withered-edge); }
+.is-dead .plot { background: var(--plot-dead); }
+.is-dead .plot .flower { opacity: 0.85; }
+.plot-badge { position: absolute; z-index: 2; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--accent-on); }
+.plot-badge.done { background: var(--success); }
+.plot-badge.alert { background: var(--danger); }
+.is-withered { border-color: var(--plot-withered-edge); }
 .plain-row { border: 0; background: none; padding-left: 0; padding-right: 0; }
 .list-row + .plain-row, .plain-row + .plain-row { border-top: 1px solid var(--border-soft); }
 .mini { display: inline-flex; width: 22px; height: 22px; flex: none; }

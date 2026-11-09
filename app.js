@@ -74,29 +74,53 @@
   ];
   const PHOTO_TONES = [['#f6d365', '#fda085'], ['#a1c4fd', '#c2e9fb'], ['#d4fc79', '#96e6a1'], ['#fbc2eb', '#a6c1ee'], ['#ffecd2', '#fcb69f'], ['#84fab0', '#8fd3f4']];
 
-  function flowerSVG(id) {
+  // Mix two #rrggbb colours: t = 0 keeps a, t = 1 gives b.
+  function mix(a, b, t) {
+    const n = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const [x, y] = [n(a), n(b)];
+    return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join('');
+  }
+  // How each habit stage draws a flower: head tilt (deg), stem bend and droop, and colour shift.
+  const STAGE_LOOK = {
+    healthy: { tilt: 0, bend: 0, drop: 0, toward: null, t: 0, stem: '#4f8a3a', leaf: '#5f9e45', fallen: 0 },
+    wilting: { tilt: 42, bend: 7, drop: 2, toward: '#b08a5a', t: 0.3, stem: '#6f8f45', leaf: '#8aa055', fallen: 0 },
+    withered: { tilt: 80, bend: 10, drop: 5, toward: '#7a4a2e', t: 0.68, stem: '#8a7742', leaf: '#a2884e', fallen: 2 },
+    dead: { tilt: 125, bend: 11, drop: 8, toward: '#b4b4b4', t: 1, stem: '#a8a8a8', leaf: '#bdbdbd', fallen: 3 },
+  };
+  function flowerSVG(id, stage = 'healthy') {
     const f = FLOWERS.find((x) => x.id === id) || FLOWERS[0];
+    const look = STAGE_LOOK[stage] || STAGE_LOOK.healthy;
+    const tone = (c) => (look.toward ? mix(c, look.toward, look.t) : c);
+    const petal = tone(f.petal), center = f.center && tone(f.center);
     const cx = 32, cy = 24;
     let head = '';
     if (f.shape === 'tulip') {
-      head = `<path d="M20 12 L26 21 L32 10 L38 21 L44 12 C47 28 41 36 32 36 C23 36 17 28 20 12Z" fill="${f.petal}"/>`;
+      head = `<path d="M20 12 L26 21 L32 10 L38 21 L44 12 C47 28 41 36 32 36 C23 36 17 28 20 12Z" fill="${petal}"/>`;
     } else if (f.shape === 'spike') {
       for (let i = 0; i < 6; i++) {
         const y = 8 + i * 4.6, rx = 2.6 + i * 0.35;
-        head += `<ellipse cx="${cx - 3.2}" cy="${y}" rx="${rx}" ry="3.2" fill="${f.petal}"/><ellipse cx="${cx + 3.2}" cy="${y + 2.2}" rx="${rx}" ry="3.2" fill="${f.petal}"/>`;
+        head += `<ellipse cx="${cx - 3.2}" cy="${y}" rx="${rx}" ry="3.2" fill="${petal}"/><ellipse cx="${cx + 3.2}" cy="${y + 2.2}" rx="${rx}" ry="3.2" fill="${petal}"/>`;
       }
     } else {
       const thin = f.shape === 'thin', r = thin ? 11 : 9;
-      const stroke = f.stroke ? ` stroke="${f.stroke}" stroke-width="1"` : '';
+      const stroke = f.stroke ? ` stroke="${tone(f.stroke)}" stroke-width="1"` : '';
       for (let i = 0; i < f.petals; i++) {
-        head += `<ellipse cx="${cx}" cy="${cy - r}" rx="${thin ? 3.6 : 8}" ry="${thin ? 9 : 10}" fill="${f.petal}"${stroke} transform="rotate(${(360 / f.petals) * i} ${cx} ${cy})"/>`;
+        head += `<ellipse cx="${cx}" cy="${cy - r}" rx="${thin ? 3.6 : 8}" ry="${thin ? 9 : 10}" fill="${petal}"${stroke} transform="rotate(${(360 / f.petals) * i} ${cx} ${cy})"/>`;
       }
-      head += `<circle cx="${cx}" cy="${cy}" r="${thin ? 7 : 5.5}" fill="${f.center}"/>`;
+      head += `<circle cx="${cx}" cy="${cy}" r="${thin ? 7 : 5.5}" fill="${center}"/>`;
     }
     const stemTop = f.shape === 'spike' ? 34 : 30;
-    const stem = `<path d="M32 ${stemTop} V62" stroke="#4f8a3a" stroke-width="3" stroke-linecap="round"/><path d="M32 52 C24 50 20 44 19 40 C26 41 31 45 32 52Z" fill="#5f9e45"/>`;
-    return `<svg class="flower" viewBox="0 0 64 64" aria-hidden="true">${stem}${head}</svg>`;
+    const { tilt, bend, drop } = look;
+    const tipX = cx + bend, tipY = stemTop + drop;
+    const stem = `<path d="M32 62 C32 50 ${32 + bend * 0.2} ${stemTop + 8} ${tipX} ${tipY}" fill="none" stroke="${look.stem}" stroke-width="3" stroke-linecap="round"/><path d="M32 52 C24 50 20 44 19 ${40 + drop} C26 ${41 + drop} 31 45 32 52Z" fill="${look.leaf}"/>`;
+    const fallen = Array.from({ length: look.fallen }, (_, i) => `<ellipse cx="${16 + i * 13}" cy="${61 - (i % 2)}" rx="3.4" ry="1.6" fill="${petal}" transform="rotate(${i % 2 ? 18 : -14} ${16 + i * 13} 61)"/>`).join('');
+    const headG = tilt || bend ? `<g transform="translate(${bend} ${drop}) rotate(${tilt} 32 ${stemTop})">${head}</g>` : head;
+    // Shift a drooping flower left so its bent head stays inside the frame.
+    const shift = -Math.round(bend * 0.6 + tilt / 14);
+    return `<svg class="flower" viewBox="0 0 64 64" overflow="visible" aria-hidden="true"><g transform="translate(${shift} 0)">${stem}${headG}</g>${fallen}</svg>`;
   }
+  // A just-planted habit with no snaps yet.
+  const sproutSVG = () => '<svg class="flower" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 62 V44" stroke="#4f8a3a" stroke-width="3" stroke-linecap="round"/><path d="M32 48 C26 47 22 42 21 37 C27 38 31 42 32 48Z" fill="#5f9e45"/><path d="M32 46 C38 45 42 40 43 35 C37 36 33 40 32 46Z" fill="#6fb04f"/></svg>';
   function placeholderPhoto(seed) {
     const [a, b] = pick(PHOTO_TONES, seed);
     const x = 60 + Math.floor(hash(seed + 'x') * 180), y = 80 + Math.floor(hash(seed + 'y') * 160);
@@ -231,14 +255,19 @@
     const done = due.filter((h) => habitState(h).recordedToday).length;
     const cards = hs.map((h) => {
       const st = habitState(h);
-      const status = st.recordedToday ? '<i class="ti ti-circle-check done-mark" aria-hidden="true"></i>' : '';
-      return `<div class="card habit-card">
-        <button class="habit-main tappable" data-action="edit-habit" data-id="${h.id}" aria-label="Edit ${esc(h.name)}">
-          ${habitIcon(h)}
-          <div class="grow"><div class="h3">${esc(h.name)}</div><div class="xs muted">${esc(scheduleText(h))}${h.reminder ? ` · <i class="ti ti-bell" aria-label="Reminder"></i> ${esc(fmtTime(h.time))}` : ''}</div></div>
-          <div class="habit-streak"><div class="n">${st.streak}</div><div class="xs muted">streak</div></div>
+      const look = { new: 'new', healthy: 'healthy', wilting: 'wilting', withered: 'withered', reset: 'dead' }[st.stage];
+      const badge = st.recordedToday ? '<span class="plot-badge done"><i class="ti ti-check"></i></span>'
+        : look === 'withered' ? '<span class="plot-badge alert"><i class="ti ti-alert-triangle"></i></span>' : '';
+      return `<div class="card habit-card is-${look}">
+        <button class="habit-main tappable" data-action="edit-habit" data-id="${h.id}" aria-label="Edit ${esc(h.name)}, ${esc(STAGE_CHIP[st.stage])}">
+          <span class="plot" aria-hidden="true">${look === 'new' ? sproutSVG() : flowerSVG(h.flower, look)}${badge}</span>
+          <div class="grow">
+            <div class="h3">${esc(h.name)}</div>
+            <div class="xs muted">${esc(scheduleText(h))}${h.reminder ? ` · <i class="ti ti-bell" aria-label="Reminder"></i> ${esc(fmtTime(h.time))}` : ''}</div>
+            <div class="habit-meta">${stageChip(st)}<span class="xs muted"><strong class="streak-n">${st.streak}</strong> day streak</span></div>
+          </div>
         </button>
-        <div class="habit-foot">${stageChip(st)}<span class="xs muted grow">${esc(stageMsg(h, st))}</span>${status}
+        <div class="habit-foot"><span class="xs muted grow">${esc(stageMsg(h, st))}</span>
           ${st.recordedToday ? '' : `<button class="btn-icon outline" data-action="snap-habit" data-id="${h.id}" aria-label="Snap ${esc(h.name)}"><i class="ti ti-camera"></i></button>`}</div>
       </div>`;
     }).join('');
