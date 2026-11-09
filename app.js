@@ -83,8 +83,8 @@
   // How each habit stage draws a flower: head tilt (deg), stem bend and droop, and colour shift.
   const STAGE_LOOK = {
     healthy: { tilt: 0, bend: 0, drop: 0, toward: null, t: 0, stem: '#4f8a3a', leaf: '#5f9e45', fallen: 0 },
-    wilting: { tilt: 42, bend: 7, drop: 2, toward: '#b08a5a', t: 0.3, stem: '#6f8f45', leaf: '#8aa055', fallen: 0 },
-    withered: { tilt: 80, bend: 10, drop: 5, toward: '#7a4a2e', t: 0.68, stem: '#8a7742', leaf: '#a2884e', fallen: 2 },
+    wilting: { tilt: 80, bend: 10, drop: 5, toward: '#7a4a2e', t: 0.68, stem: '#8a7742', leaf: '#a2884e', fallen: 2 },
+    withered: { tilt: 98, bend: 11, drop: 7, toward: '#3a2214', t: 0.86, stem: '#5c4628', leaf: '#6b5432', fallen: 4 },
     dead: { tilt: 125, bend: 11, drop: 8, toward: '#b4b4b4', t: 1, stem: '#a8a8a8', leaf: '#bdbdbd', fallen: 3 },
   };
   function flowerSVG(id, stage = 'healthy') {
@@ -113,7 +113,8 @@
     const { tilt, bend, drop } = look;
     const tipX = cx + bend, tipY = stemTop + drop;
     const stem = `<path d="M32 62 C32 50 ${32 + bend * 0.2} ${stemTop + 8} ${tipX} ${tipY}" fill="none" stroke="${look.stem}" stroke-width="3" stroke-linecap="round"/><path d="M32 52 C24 50 20 44 19 ${40 + drop} C26 ${41 + drop} 31 45 32 52Z" fill="${look.leaf}"/>`;
-    const fallen = Array.from({ length: look.fallen }, (_, i) => `<ellipse cx="${16 + i * 13}" cy="${61 - (i % 2)}" rx="3.4" ry="1.6" fill="${petal}" transform="rotate(${i % 2 ? 18 : -14} ${16 + i * 13} 61)"/>`).join('');
+    const step = look.fallen > 3 ? 9 : 13;
+    const fallen = Array.from({ length: look.fallen }, (_, i) => `<ellipse cx="${14 + i * step}" cy="${61 - (i % 2)}" rx="3.4" ry="1.6" fill="${petal}" transform="rotate(${i % 2 ? 18 : -14} ${14 + i * step} 61)"/>`).join('');
     const headG = tilt || bend ? `<g transform="translate(${bend} ${drop}) rotate(${tilt} 32 ${stemTop})">${head}</g>` : head;
     // Shift a drooping flower left so its bent head stays inside the frame.
     const shift = -Math.round(bend * 0.6 + tilt / 14);
@@ -257,15 +258,16 @@
       const st = habitState(h);
       const look = { new: 'new', healthy: 'healthy', wilting: 'wilting', withered: 'withered', reset: 'dead' }[st.stage];
       const badge = st.recordedToday ? '<span class="plot-badge done"><i class="ti ti-check"></i></span>'
-        : look === 'withered' ? '<span class="plot-badge alert"><i class="ti ti-alert-triangle"></i></span>' : '';
+        : look === 'withered' ? '<svg class="plot-alert" viewBox="0 0 24 22" aria-hidden="true"><path d="M12 1.5 23 20.5H1Z" fill="var(--danger)" stroke="var(--danger)" stroke-width="2" stroke-linejoin="round"/><rect x="10.8" y="7.5" width="2.4" height="7" rx="1.2" fill="#fff"/><circle cx="12" cy="17.4" r="1.4" fill="#fff"/></svg>' : '';
       return `<div class="card habit-card is-${look}">
         <button class="habit-main tappable" data-action="edit-habit" data-id="${h.id}" aria-label="Edit ${esc(h.name)}, ${esc(STAGE_CHIP[st.stage])}">
           <span class="plot" aria-hidden="true">${look === 'new' ? sproutSVG() : flowerSVG(h.flower, look)}${badge}</span>
           <div class="grow">
             <div class="h3">${esc(h.name)}</div>
             <div class="xs muted">${esc(scheduleText(h))}${h.reminder ? ` · <i class="ti ti-bell" aria-label="Reminder"></i> ${esc(fmtTime(h.time))}` : ''}</div>
-            <div class="habit-meta">${stageChip(st)}<span class="xs muted"><strong class="streak-n">${st.streak}</strong> day streak</span></div>
+            <div class="habit-meta">${stageChip(st)}</div>
           </div>
+          <div class="habit-streak"><div class="n">${st.streak}</div><div class="xs muted">streak</div></div>
         </button>
         <div class="habit-foot"><span class="xs muted grow">${esc(stageMsg(h, st))}</span>
           ${st.recordedToday ? '' : `<button class="btn-icon outline" data-action="snap-habit" data-id="${h.id}" aria-label="Snap ${esc(h.name)}"><i class="ti ti-camera"></i></button>`}</div>
